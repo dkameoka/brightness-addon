@@ -7,5 +7,6 @@ script_dir=$(dirname "$script_path")
 cd "$script_dir"
 
 rm --verbose --force brightness-addon.zip
-zip -r brightness-addon.zip * --exclude '*.git*' --exclude '*.sh' --exclude '*.zip' --exclude '*.md'
+zip -r brightness-addon.zip * --exclude '*.git*' --exclude '*.sh' --exclude '*.zip' --exclude '*.md' --exclude '*/_*' --exclude '_*'
+echo 'Wrote brightness-addon.zip'
 
