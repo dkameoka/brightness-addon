@@ -1,41 +1,41 @@
 
-let brightness_range = document.getElementById('brightness');
+let brightness_input = document.getElementById('brightness');
 
-brightness_range.onchange = function(e) {
+// TODO: Switch to "browser.storage.session"; though, it does not yet exist in Firefox as of Dec 2022.
+brightness_input.oninput = function(e) {
     browser.tabs.query({active: true, currentWindow: true}).then(async tabs => {
         for (const tab of tabs) {
-            //Set new brightness first to reduce flashing.
-            let new_brightness = parseInt(e.target.value);
+            // Set new brightness first to reduce flashing.
+            let brightness_step = parseInt(e.target.value);
             await browser.scripting.insertCSS({
                 target: {tabId: tab.id},
-                css: 'html {filter: brightness(' + new_brightness + '%) !important;}'
+                css: 'html {filter: brightness(' + brightness_step * 10 + '%) !important;}'
             });
 
-            //Remove older brightness CSS. browser.storage.session does not yet exist in Firefox as of Dec 2022.
-            //browser.storage.session.get({[tab.id]: 100}).then(result => {
-            //    let brightness = parseInt(result[tab.id]);
-            await browser.sessions.getTabValue(tab.id,'brightness').then(result => {
-                let brightness = parseInt(result);
+            // Iterate to remove all other possible inserted CSS.
+            for (let step = 0;step < 10;step++) {
+                if (step == brightness_step) {
+                    continue;
+                }
                 browser.scripting.removeCSS({
                     target: {tabId: tab.id},
-                    css: 'html {filter: brightness(' + brightness + '%) !important;}'
+                    css: 'html {filter: brightness(' + step * 10 + '%) !important;}'
                 });
-            });
+            }
 
             // Store new brightness
-            //browser.storage.session.set({[tab.id]: [new_brightness]});
-            browser.sessions.setTabValue(tab.id,'brightness',new_brightness);
+            browser.sessions.setTabValue(tab.id,'brightness_step',brightness_step);
         }
     });
 };
 
 browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
     for (const tab of tabs) {
-        browser.sessions.getTabValue(tab.id,'brightness').then(result => {
+        browser.sessions.getTabValue(tab.id,'brightness_step').then(result => {
             if (result == undefined) {
-                brightness_range.value = '100';
+                brightness_input.value = '100';
             } else {
-                brightness_range.value = result;
+                brightness_input.value = result;
             }
         });
     }
