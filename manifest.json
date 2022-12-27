@@ -1,36 +1,35 @@
 {
-  "manifest_version": 3,
-  "name": "Brightness",
-  "version": "1.0.0",
-
-  "description": "Adjust brightness per tab",
-
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{b9fad55f-f27d-46a6-a257-3ce55a3145a6}"
-    }
-  },
-
-  "icons": {
-    "48": "icons/brightness.svg"
-  },
-
-  "permissions": [
-      "tabs",
-      "scripting",
-      "sessions",
-      "storage"
-  ],
-
-  "host_permissions": [
-      "<all_urls>"
-  ],
-
-  "action": {
-    "default_icon": {
-     "48" : "icons/brightness.svg"
+    "manifest_version": 3,
+    "name": "Brightness",
+    "version": "1.0.0",
+  
+    "description": "Adjust brightness per tab",
+  
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{b9fad55f-f27d-46a6-a257-3ce55a3145a6}"
+        }
     },
-    "default_title": "Brightness",
-    "default_popup": "brightness.html"
-  }
+  
+    "icons": {
+        "48": "icons/brightness.svg"
+    },
+  
+    "permissions": [
+        "tabs",
+        "scripting",
+        "sessions"
+    ],
+  
+    "host_permissions": [
+        "<all_urls>"
+    ],
+  
+    "action": {
+        "default_icon": {
+            "48" : "icons/brightness.svg"
+        },
+        "default_title": "Brightness",
+        "default_popup": "brightness.html"
+    }
 }
