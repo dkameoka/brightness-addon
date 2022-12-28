@@ -5,9 +5,8 @@ let brightness_input = document.getElementById('brightness');
 async function set_brightness(tabId,value) {
     // Set new brightness first to reduce flashing.
     let brightness_step = parseInt(value);
-    await browser.scripting.insertCSS({
-        target: {tabId: tabId},
-        css: 'html {filter: brightness(' + brightness_step * 10 + '%) !important;}'
+    await browser.tabs.insertCSS(tabId,{
+        code: 'html {filter: brightness(' + brightness_step * 10 + '%) !important;}'
     });
 
     // Iterate to remove all other possible inserted CSS.
@@ -15,9 +14,8 @@ async function set_brightness(tabId,value) {
         if (step == brightness_step) {
             continue;
         }
-        await browser.scripting.removeCSS({
-            target: {tabId: tabId},
-            css: 'html {filter: brightness(' + step * 10 + '%) !important;}'
+        await browser.tabs.removeCSS(tabId,{
+            code: 'html {filter: brightness(' + step * 10 + '%) !important;}'
         });
     }
 
