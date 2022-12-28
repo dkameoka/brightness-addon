@@ -2,5 +2,5 @@
 
 * Adds a plain brightness slider menu popup icon.
 * No background scripts using up resources.
-* Uses Manifest V3.
+* Uses Manifest V2.
 
