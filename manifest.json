@@ -1,5 +1,5 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
     "name": "Brightness",
     "version": "1.0.1",
   
@@ -18,14 +18,11 @@
     "permissions": [
         "tabs",
         "scripting",
-        "sessions"
-    ],
-  
-    "host_permissions": [
+        "sessions",
         "<all_urls>"
     ],
   
-    "action": {
+    "browser_action": {
         "default_icon": {
             "48" : "icons/brightness.svg"
         },
