@@ -16,10 +16,9 @@
     },
   
     "permissions": [
-        "tabs",
+        "activeTab",
         "scripting",
-        "sessions",
-        "<all_urls>"
+        "sessions"
     ],
   
     "browser_action": {
