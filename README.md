@@ -6,3 +6,4 @@ Available on AMO here: https://addons.mozilla.org/firefox/addon/brightnessslider
 * No background scripts using up resources.
 * Uses Manifest V3.
 
+* For a more persistent option, use a [userContent.css](https://raw.githubusercontent.com/dkameoka/brightness-addon/main/userContent.js).

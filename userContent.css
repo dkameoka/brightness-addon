@@ -1,0 +1,21 @@
+/* Installation
+ * 1. Edit and save as "profile folder"/chrome/userContent.css, where "profile folder" is retrieved from visiting about:profiles and clicking one of the "Open Directory" buttons. Create the chrome/ (all lowercase) folder if it doesn't exist. Linux example: /home/name/.mozilla/firefox/abcdefg.default-release/chrome/userContent.css
+ * 2. Enable toolkit stylesheets by visiting about:config and setting toolkit.legacyUserProfileCustomizations.stylesheets to true.
+ * 3. Restart Firefox.
+ * See for more info: https://developer.mozilla.org/en-US/docs/Web/CSS/@document
+ */
+
+@-moz-document
+    domain("archlinux.org"),
+    domain("wikipedia.org"),
+    domain("medium.com"),
+    domain("freedesktop.org")
+{
+    html {filter: brightness(50%) !important;}
+}
+
+/* Websites with iframes or frames must use CSS that selects the outer <html> element, because the CSS applies equally to the <html> elements within them and causes the filter to stack. */
+@-moz-document regexp("*mail.google.com/*")
+{
+    html.aAX {filter: brightness(50%) !important;}
+}
