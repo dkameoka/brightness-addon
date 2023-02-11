@@ -15,7 +15,7 @@
 }
 
 /* Websites with iframes or frames must use CSS that selects the outer <html> element, because the CSS applies equally to the <html> elements within them and causes the filter to stack. */
-@-moz-document regexp("*mail.google.com/*")
+@-moz-document regexp(".*mail.google.com/.*")
 {
     html.aAX {filter: brightness(50%) !important;}
 }
