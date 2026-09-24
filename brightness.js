@@ -1,48 +1,42 @@
 
 let brightness_input = document.getElementById('brightness');
 
-// TODO: Switch to "browser.storage.session"; though, it does not yet exist in Firefox as of Dec 2022.
-async function set_brightness(tabId,value) {
-    // Set new brightness first to reduce flashing.
-    let brightness_step = parseInt(value);
+
+async function set_brightness(tabId, value) {
+    await browser.scripting.executeScript({
+        target: {tabId: tab.id},
+        func: (brightness) => {
+            document.documentElement.style.setProperty('--brightness-value', `${brightness}%`);
+        },
+        args: [value]
+    });
+}
+
+
+brightness_input.oninput = async (e) => {
+    const [tab] = await browser.tabs.query({active: true, currentWindow: true});
+    set_brightness(tab.id, e.target.value);
+    await browser.storage.session.set({[`bright-${tab.id}`]: e.target.value});
+};
+
+
+// It can be assumed that querying for tabs that are both active and current will always result in
+// one tab, even if there are two tabs in split view mode.
+const [tab] = await browser.tabs.query({active: true, currentWindow: true});
+
+// Insert CSS if the tab id is not stored with a value. Tab id is unique until browser restart.
+// Storage of session type is also cleared on browser restart. This also allows tracking of
+// inserted CSS.
+const key = `bright-${tab.id}`;
+const values = await browser.storage.session.get(key);
+const value = values[key];
+if (value == undefined) {
     await browser.scripting.insertCSS({
-        target: {tabId: tabId},
-        css: 'html {filter: brightness(' + brightness_step * 10 + '%) !important;}'
+        target: {tabId: tab.id},
+        css: 'html {filter: brightness(var(--brightness-value)) !important;}'
     });
-
-    // Iterate to remove all other possible inserted CSS.
-    for (let step = 0;step < 10;step++) {
-        if (step == brightness_step) {
-            continue;
-        }
-        await browser.scripting.removeCSS({
-            target: {tabId: tabId},
-            css: 'html {filter: brightness(' + step * 10 + '%) !important;}'
-        });
-    }
-
-    // Store new brightness
-    await browser.sessions.setTabValue(tabId,'brightness_step',brightness_step);
-};
-
-brightness_input.oninput = function(e) {
-    browser.tabs.query({active: true,currentWindow: true}).then(async tabs => {
-        for (const tab of tabs) {
-            set_brightness(tab.id,e.target.value);
-        }
-    });
-};
-
-browser.tabs.query({active: true,currentWindow: true}).then(tabs => {
-    for (const tab of tabs) {
-        browser.sessions.getTabValue(tab.id,'brightness_step').then(result => {
-            if (result == undefined) {
-                brightness_input.value = '100';
-            } else {
-                brightness_input.value = result;
-                set_brightness(tab.id,result);
-            }
-        });
-    }
-});
-
+    await browser.storage.session.set({[`bright-${tab.id}`]: 100});
+} else {
+    set_brightness(tab.id, value);
+    brightness_input.value = value;
+}
