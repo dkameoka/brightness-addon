@@ -10,13 +10,13 @@ async function set_brightness(tabId, value) {
         },
         args: [value]
     });
+    await browser.storage.session.set({[`bright-${tab.id}`]: value});
 }
 
 
 brightness_input.oninput = async (e) => {
     const [tab] = await browser.tabs.query({active: true, currentWindow: true});
     set_brightness(tab.id, e.target.value);
-    await browser.storage.session.set({[`bright-${tab.id}`]: e.target.value});
 };
 
 
@@ -24,19 +24,27 @@ brightness_input.oninput = async (e) => {
 // one tab, even if there are two tabs in split view mode.
 const [tab] = await browser.tabs.query({active: true, currentWindow: true});
 
-// Insert CSS if the tab id is not stored with a value. Tab id is unique until browser restart.
-// Storage of session type is also cleared on browser restart. This also allows tracking of
-// inserted CSS.
-const key = `bright-${tab.id}`;
-const values = await browser.storage.session.get(key);
-const value = values[key];
-if (value == undefined) {
+// Retrieve style property to detect if CSS needs to be inserted.
+// TODO: Allow customizing of property name to avoid collisions and profiling?
+const [prop_result] = await browser.scripting.executeScript({
+    target: {tabId: tab.id},
+    func: (prop_name) => {
+        return document.documentElement.style.getPropertyValue(prop_name);
+    },
+    args: ['--brightness-value']
+});
+const prop_value = prop_result.result;
+if (prop_value.length === 0) {
     await browser.scripting.insertCSS({
         target: {tabId: tab.id},
-        css: 'html {filter: brightness(var(--brightness-value)) !important;}'
+        css: 'html {filter: brightness(var(--brightness-value)) !important;}',
+        origin: 'USER'
     });
-    await browser.storage.session.set({[`bright-${tab.id}`]: 100});
-} else {
-    set_brightness(tab.id, value);
-    brightness_input.value = value;
 }
+
+// Restore brightness and input value.
+const key = `bright-${tab.id}`;
+const values = await browser.storage.session.get(key);
+const value = values[key] || 100;
+set_brightness(tab.id, value);
+brightness_input.value = value;
