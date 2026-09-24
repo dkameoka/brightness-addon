@@ -2,24 +2,24 @@
     "manifest_version": 3,
     "name": "Brightness",
     "version": "1.0.3",
-  
+
     "description": "Adjust brightness per tab",
-  
+
     "browser_specific_settings": {
         "gecko": {
             "id": "{b9fad55f-f27d-46a6-a257-3ce55a3145a6}"
         }
     },
-  
+
     "icons": {
         "48": "icons/brightness.svg"
     },
-  
+
     "permissions": [
         "activeTab",
         "sessions"
     ],
-  
+
     "action": {
         "default_icon": {
             "48" : "icons/brightness.svg"
