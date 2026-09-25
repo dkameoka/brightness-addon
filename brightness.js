@@ -1,50 +1,70 @@
+const brightness_input = document.getElementById('brightness');
 
-let brightness_input = document.getElementById('brightness');
+let new_value;
 
 
-async function set_brightness(tabId, value) {
-    await browser.scripting.executeScript({
-        target: {tabId: tab.id},
-        func: (brightness) => {
-            document.documentElement.style.setProperty('--brightness-value', `${brightness}%`);
-        },
-        args: [value]
-    });
-    await browser.storage.session.set({[`bright-${tab.id}`]: value});
+async function get_tab_id() {
+    // It can be assumed that querying for tabs that are both active and current will
+    //  always result in one tab, even if there are two tabs in split view mode.
+    const [tab] = await browser.tabs.query({active: true, currentWindow: true});
+    return tab.id;
 }
 
 
-brightness_input.oninput = async (e) => {
-    const [tab] = await browser.tabs.query({active: true, currentWindow: true});
-    set_brightness(tab.id, e.target.value);
+async function get_session_by_pair(a, b) {
+    const key = `${a}-${b}`;
+    const session = await browser.storage.session.get(key);
+    return session[key];
+}
+
+
+async function set_session_by_pair(a, b, value) {
+    const key = `${a}-${b}`;
+    await browser.storage.session.set({[key]: value});
+}
+
+
+async function set_brightness() {
+    const tab_id = await get_tab_id();
+
+    const old_value = await get_session_by_pair('bright', tab_id);
+
+    let value = new_value;
+    if (value === undefined) {
+        value = old_value || 100;
+    }
+
+    await set_session_by_pair('bright', tab_id, value);
+
+    // Swap CSS by inserting first and then removing the previous. Usage of style
+    //  properties can cause conflicts within the page JS and can be detected.
+    await browser.scripting.insertCSS({ // Must be awaited as order of execution is needed.
+        target: {tabId: tab_id},
+        css: `html {filter: brightness(${value}%) !important;}`,
+        origin: 'USER'
+    });
+
+    // Only remove CSS if old value is not undefined and not the same.
+    if (old_value !== undefined && old_value !== value) {
+        await browser.scripting.removeCSS({
+            target: {tabId: tab_id},
+            css: `html {filter: brightness(${old_value}%) !important;}`,
+            origin: 'USER'
+        });
+    }
+
+    // Rate limit and prevent race condition, but runs with no new value.
+    setTimeout(set_brightness, 50);
+}
+
+
+brightness_input.oninput = function (e) {
+    new_value = e.target.value;
 };
 
 
-// It can be assumed that querying for tabs that are both active and current will always result in
-// one tab, even if there are two tabs in split view mode.
-const [tab] = await browser.tabs.query({active: true, currentWindow: true});
+set_brightness();
 
-// Retrieve style property to detect if CSS needs to be inserted.
-// TODO: Allow customizing of property name to avoid collisions and profiling?
-const [prop_result] = await browser.scripting.executeScript({
-    target: {tabId: tab.id},
-    func: (prop_name) => {
-        return document.documentElement.style.getPropertyValue(prop_name);
-    },
-    args: ['--brightness-value']
-});
-const prop_value = prop_result.result;
-if (prop_value.length === 0) {
-    await browser.scripting.insertCSS({
-        target: {tabId: tab.id},
-        css: 'html {filter: brightness(var(--brightness-value)) !important;}',
-        origin: 'USER'
-    });
-}
 
-// Restore brightness and input value.
-const key = `bright-${tab.id}`;
-const values = await browser.storage.session.get(key);
-const value = values[key] || 100;
-set_brightness(tab.id, value);
-brightness_input.value = value;
+// Restore input value on initial run.
+brightness_input.value = await get_session_by_pair('bright', await get_tab_id()) || 100;
