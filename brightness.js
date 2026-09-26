@@ -4,8 +4,9 @@ let new_value;
 
 
 async function get_tab_id() {
-    // It can be assumed that querying for tabs that are both active and current will
-    //  always result in one tab, even if there are two tabs in split view mode.
+    // It can be assumed that querying for tabs that are both active and
+    //  current will always result in one tab, even if there are two tabs in
+    //  split view mode.
     const [tab] = await browser.tabs.query({active: true, currentWindow: true});
     return tab.id;
 }
@@ -36,8 +37,9 @@ async function set_brightness() {
 
     await set_session_by_pair('bright', tab_id, value);
 
-    // Swap CSS by inserting first and then removing the previous. Usage of style
-    //  properties can cause conflicts within the page JS and can be detected.
+    // Swap CSS by inserting first and then removing the previous. Previous
+    //  usage of style properties can caused conflicts within the page JS and
+    //  can be detected.
     await browser.scripting.insertCSS({ // Must be awaited as order of execution is needed.
         target: {tabId: tab_id},
         css: `html {filter: brightness(${value}%) !important;}`,
@@ -54,6 +56,8 @@ async function set_brightness() {
     }
 
     // Rate limit and prevent race condition, but runs with no new value.
+    //  Because this is part of a popup, it will only exist while the popup
+    //  is open.
     setTimeout(set_brightness, 50);
 }
 
@@ -66,5 +70,4 @@ brightness_input.oninput = function (e) {
 set_brightness();
 
 
-// Restore input value on initial run.
 brightness_input.value = await get_session_by_pair('bright', await get_tab_id()) || 100;
