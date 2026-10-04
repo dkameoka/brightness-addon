@@ -32,7 +32,7 @@ async function set_brightness() {
 
     let value = new_value;
     if (value === undefined) {
-        value = old_value || 100;
+        value = old_value || 50;
     }
 
     await set_session_by_pair('bright', tab_id, value);
@@ -70,4 +70,4 @@ brightness_input.oninput = function (e) {
 set_brightness();
 
 
-brightness_input.value = await get_session_by_pair('bright', await get_tab_id()) || 100;
+brightness_input.value = await get_session_by_pair('bright', await get_tab_id()) || 50;
